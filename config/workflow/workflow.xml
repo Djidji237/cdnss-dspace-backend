@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workflows>
+    <!-- WORKFLOW PAR DÉFAUT -->
+    <workflow name="defaultWorkflow" start="step_approval">
+        <step name="step_approval" title="Approbation" AUI_TYPE="workflow.step.default.description">
+            <next-step>step_archived</next-step>
+            <!-- Rôles temporaires 'Administrator' pour éviter blocage au démarrage -->
+            <role>Administrator</role> 
+        </step>
+        <step name="step_archived" title="Archivé" AUI_TYPE="workflow.step.archived.description"/>
+    </workflow>
+
+    <!-- WORKFLOW PROJETS AAR -->
+    <workflow name="ProjetAARWorkflow" start="step_cotation">
+        <step name="step_cotation" title="En attente de cotation" AUI_TYPE="claim">
+            <next-step>step_traitement</next-step>
+            <role>Administrator</role> 
+        </step>
+        <step name="step_traitement" title="En traitement" AUI_TYPE="view">
+            <next-step>step_complete</next-step>
+            <next-step>step_complement</next-step>
+            <role>Administrator</role> 
+        </step>
+        <step name="step_complement" title="En attente de complétude" AUI_TYPE="view">
+            <next-step>step_traitement</next-step>
+        </step>
+        <step name="step_complete" title="Traité et Approuvé" AUI_TYPE="archive" />
+    </workflow>
+    
+    <!-- MAPPING WORKFLOW -->
+    <workflow-map>
+        <name-map collection-handle="default" workflow="defaultWorkflow"/>
+    </workflow-map>
+</workflows>

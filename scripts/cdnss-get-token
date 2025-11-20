@@ -1,0 +1,114 @@
+#!/bin/bash
+# Script pour obtenir un token JWT DSpace 9.1
+# Usage: cdnss-get-token [email] [password]
+
+EMAIL=${1:-"admin@pheoc.cm"}
+PASSWORD=${2:-"AdminCDNSS2024!"}
+API_URL="http://localhost:8080/server/api"
+
+echo "════════════════════════════════════════"
+echo "Authentification DSpace 9.1 CDNSS"
+echo "════════════════════════════════════════"
+echo "Email: $EMAIL"
+echo ""
+
+# Étape 1: Obtenir le CSRF token depuis /authn/status
+echo "→ Obtention du CSRF token..."
+CSRF_RESPONSE=$(curl -si -X GET "$API_URL/authn/status" 2>/dev/null)
+
+CSRF_TOKEN=$(echo "$CSRF_RESPONSE" | grep -i "DSPACE-XSRF-TOKEN:" | cut -d' ' -f2 | tr -d '\r\n')
+JSESSIONID=$(echo "$CSRF_RESPONSE" | grep -i "JSESSIONID=" | grep -oP 'JSESSIONID=[^;]+')
+
+if [ -z "$CSRF_TOKEN" ]; then
+    echo "✗ Erreur: Impossible d'obtenir le CSRF token"
+    echo ""
+    echo "Vérifiez que l'API est accessible:"
+    echo "  curl http://localhost:8080/server/api"
+    echo ""
+    echo "Détails de la réponse:"
+    echo "$CSRF_RESPONSE" | head -20
+    exit 1
+fi
+
+echo "✓ CSRF Token: ${CSRF_TOKEN:0:20}..."
+echo "✓ Session: ${JSESSIONID:0:30}..."
+echo ""
+
+# Étape 2: Authentification avec le CSRF token
+echo "→ Authentification..."
+AUTH_RESPONSE=$(curl -si -X POST "$API_URL/authn/login" \
+  -H "Content-Type: application/json" \
+  -H "X-XSRF-TOKEN: $CSRF_TOKEN" \
+  -H "Cookie: $JSESSIONID" \
+  -d "{\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}" 2>/dev/null)
+
+# Extraire le nouveau token CSRF et le cookie Authorization
+NEW_CSRF_TOKEN=$(echo "$AUTH_RESPONSE" | grep -i "DSPACE-XSRF-TOKEN:" | cut -d' ' -f2 | tr -d '\r\n')
+AUTH_TOKEN=$(echo "$AUTH_RESPONSE" | grep -i "Authorization:" | cut -d' ' -f2 | tr -d '\r\n')
+NEW_COOKIE=$(echo "$AUTH_RESPONSE" | grep -i "Set-Cookie:" | grep "JSESSIONID" | cut -d' ' -f2 | tr -d '\r\n' | cut -d';' -f1)
+
+# Vérifier le statut de la réponse
+HTTP_STATUS=$(echo "$AUTH_RESPONSE" | grep "HTTP/" | awk '{print $2}' | head -1)
+
+if [ "$HTTP_STATUS" != "200" ]; then
+    echo "✗ Erreur d'authentification (HTTP $HTTP_STATUS)"
+    echo ""
+    echo "Réponse complète:"
+    echo "$AUTH_RESPONSE"
+    exit 1
+fi
+
+if [ -z "$AUTH_TOKEN" ]; then
+    echo "✗ Erreur: Token d'autorisation non reçu"
+    echo ""
+    echo "Headers reçus:"
+    echo "$AUTH_RESPONSE" | head -20
+    exit 1
+fi
+
+echo "✓ Authentification réussie!"
+echo ""
+echo "════════════════════════════════════════"
+echo "INFORMATIONS D'AUTHENTIFICATION"
+echo "════════════════════════════════════════"
+echo ""
+echo "Authorization Token:"
+echo "$AUTH_TOKEN"
+echo ""
+echo "CSRF Token (pour requêtes POST/PUT/DELETE):"
+echo "$NEW_CSRF_TOKEN"
+echo ""
+echo "Cookie JSESSIONID:"
+echo "$NEW_COOKIE"
+echo ""
+
+# Sauvegarder les tokens
+mkdir -p ~/.dspace
+echo "$AUTH_TOKEN" > ~/.dspace/auth_token.txt
+echo "$NEW_CSRF_TOKEN" > ~/.dspace/csrf_token.txt
+echo "$NEW_COOKIE" > ~/.dspace/session_cookie.txt
+chmod 600 ~/.dspace/*
+
+echo "════════════════════════════════════════"
+echo "UTILISATION"
+echo "════════════════════════════════════════"
+echo ""
+echo "Pour les requêtes GET:"
+echo ""
+echo "curl \"$API_URL/core/communities\" \\"
+echo "  -H \"Authorization: Bearer $AUTH_TOKEN\""
+echo ""
+echo "Pour les requêtes POST/PUT/DELETE:"
+echo ""
+echo "curl -X POST \"$API_URL/...\" \\"
+echo "  -H \"Authorization: Bearer $AUTH_TOKEN\" \\"
+echo "  -H \"X-XSRF-TOKEN: $NEW_CSRF_TOKEN\" \\"
+echo "  -H \"Cookie: $NEW_COOKIE\" \\"
+echo "  -H \"Content-Type: application/json\" \\"
+echo "  -d '{...}'"
+echo ""
+echo "════════════════════════════════════════"
+echo ""
+echo "Tokens sauvegardés dans ~/.dspace/"
+echo "Utilisez 'cdnss-api-call' pour des requêtes simplifiées"
+echo ""

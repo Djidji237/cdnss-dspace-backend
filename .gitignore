@@ -1,0 +1,32 @@
+# Fichiers de configuration avec mots de passe
+config/local.cfg
+*.secret
+*.key
+*.pem
+
+# Logs
+*.log
+logs/
+
+# Backups
+*.backup
+*.bak
+backup/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+temp/
+
+# DSpace specific
+assetstore/
+solr/data/

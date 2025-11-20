@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node id="types-etude" label="Types d'étude">
+    <node id="fondamentale" label="Recherche fondamentale"/>
+    <node id="interventionnelle" label="Études interventionnelles"/>
+    <node id="observationnelle" label="Études observationnelles"/>
+    <node id="clinique" label="Recherche clinique"/>
+    <node id="epidemiologique" label="Recherche épidémiologique"/>
+</node>

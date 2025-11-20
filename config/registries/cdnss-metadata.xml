@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+FICHIER DE CONFIGURATION CDNSS (MLD)
+Crée le "namespace" 'cdnss' et tous les champs de métadonnées personnalisés
+requis par votre MLD.
+-->
+<metadata-registry>
+    <metadata-schemas>
+        <schema>
+            <name>cdnss</name>
+            <namespace>https://cdnss.minsante.cm/schema/cdnss</namespace>
+        </schema>
+    </metadata-schemas>
+    <metadata-fields>
+        <!-- Champs de la table "Projets de recherche" (MLD) -->
+        <field><schema>cdnss</schema><element>projet</element><qualifier>status</qualifier><description>Statut du projet (soumis, evaluation, valide...) - MLD: Projets de recherche.status</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>validationLevel</qualifier><description>Décision sur le dossier (validé, rejeté) - MLD: Projets de recherche.validation_level</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>dateAAR</qualifier><description>Date de délivrance AAR - MLD: Projets de recherche.aar_deliverance_date</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>ethClearanceNum</qualifier><description>Numéro avis éthique - MLD: Projets de recherche.ethical_clearance_number</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>ethClearanceDate</qualifier><description>Date délivrance clairance éthique - MLD: Projets de recherche.ethical_clearance_deliverance_date</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>isLocked</qualifier><description>Verrou (fin de projet) - MLD: Projets de recherche.locked</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>typeRecherche</qualifier><description>Type d’étude (observationnelle, interventionnelle...) - MLD: Projets de recherche.research_type</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>groupeAge</qualifier><description>Groupe d’âge cible - MLD: Projets de recherche.target_age_group</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>sexeCible</qualifier><description>Sexe ciblé - MLD: Projets de recherche.target_sex</description></field>
+    
+        <!-- Champs de la table "Essais cliniques" (MLD) -->
+        <field><schema>cdnss</schema><element>essai</element><qualifier>phase</qualifier><description>Phase d'essai (I, II, III, IV) - MLD: Essais cliniques.phase</description></field>
+        <field><schema>cdnss</schema><element>essai</element><qualifier>status</qualifier><description>Statut essai (soumis, en_cours...) - MLD: Essais cliniques.trial_status</description></field>
+    
+        <!-- Champs pour la cartographie (MLD - Tables de jointure projet_region / projet_district) -->
+        <field><schema>cdnss</schema><element>projet</element><qualifier>region</qualifier><description>Couverture au niveau régional - MLD: projet_region</description></field>
+        <field><schema>cdnss</schema><element>projet</element><qualifier>district</qualifier><description>Couverture au niveau District - MLD: projet_district</description></field>
+        
+        <!-- Champs pour les Vocabulaires (MLD - Tables de jointure) -->
+        <!-- Ceux-ci sont des "qualifiers" (spécifications) du champ standard "dc.subject" -->
+        <field><schema>dc</schema><element>subject</element><qualifier>categorieCDNSS</qualifier><description>Vocabulaire: Catégories documentaires - MLD: category</description></field>
+        <field><schema>dc</schema><element>subject</element><qualifier>theme</qualifier><description>Vocabulaire: Thèmes documentaires - MLD: theme</description></field>
+        <field><schema>dc</schema><element>subject</element><qualifier>axeSSS</qualifier><description>Vocabulaire: Axe/Sous-axe stratégique - MLD: axis</description></field>
+        <field><schema>dc</schema><element>subject</element><qualifier>oneHealth</qualifier><description>Vocabulaire: Composantes One Health - MLD: onehealth</description></field>
+        <field><schema>dc</schema><element>subject</element><qualifier>themeRecherche</qualifier><description>Vocabulaire: Thématiques de recherche (AAR) - MLD: research_theme</description></field>
+    </metadata-fields>
+</metadata-registry>

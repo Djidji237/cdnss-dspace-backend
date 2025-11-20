@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<relationship-types>
+    <type-definitions>
+        <type>Publication</type>
+        <type>Person</type>
+        <type>Auteur</type>
+        <type>ProjetAAR</type>
+        <type>Institution</type>
+        <type>Journal</type>
+    </type-definitions>
+
+    <relationships>
+        <!-- Relation: Projet AAR <-> Publication -->
+        <type>
+            <leftType>ProjetAAR</leftType>
+            <rightType>Publication</rightType>
+            <leftwardType>isProjectOfPublication</leftwardType>
+            <rightwardType>isPublicationOfProject</rightwardType>
+            <leftCardinality>
+                <min>0</min>
+            </leftCardinality>
+            <rightCardinality>
+                <min>0</min>
+                <max>1</max>
+            </rightCardinality>
+            <copyToLeft>false</copyToLeft>
+            <copyToRight>false</copyToRight>
+        </type>
+
+        <!-- Relation: Auteur <-> Projet AAR -->
+        <type>
+            <leftType>Auteur</leftType>
+            <rightType>ProjetAAR</rightType>
+            <leftwardType>isInvestigatorOfProject</leftwardType>
+            <rightwardType>hasInvestigator</rightwardType>
+            <leftCardinality>
+                <min>0</min>
+            </leftCardinality>
+            <rightCardinality>
+                <min>1</min>
+            </rightCardinality>
+            <copyToLeft>false</copyToLeft>
+            <copyToRight>false</copyToRight>
+        </type>
+
+        <!-- Relation: Institution <-> Projet AAR -->
+        <type>
+            <leftType>Institution</leftType>
+            <rightType>ProjetAAR</rightType>
+            <leftwardType>isOrgUnitOfProject</leftwardType>
+            <rightwardType>hasOrgUnit</rightwardType>
+            <leftCardinality>
+                <min>0</min>
+            </leftCardinality>
+            <rightCardinality>
+                <min>0</min>
+                <max>1</max>
+            </rightCardinality>
+            <copyToLeft>false</copyToLeft>
+            <copyToRight>false</copyToRight>
+        </type>
+
+        <!-- Relation: Auteur <-> Institution -->
+        <type>
+            <leftType>Auteur</leftType>
+            <rightType>Institution</rightType>
+            <leftwardType>isAffiliatedWith</leftwardType>
+            <rightwardType>hasAffiliate</rightwardType>
+            <leftCardinality>
+                <min>0</min>
+            </leftCardinality>
+            <rightCardinality>
+                <min>0</min>
+            </rightCardinality>
+            <copyToLeft>false</copyToLeft>
+            <copyToRight>false</copyToRight>
+        </type>
+    </relationships>
+</relationship-types>

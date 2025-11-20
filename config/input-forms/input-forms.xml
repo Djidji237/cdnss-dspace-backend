@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE input-forms SYSTEM "input-forms.dtd">
+<input-forms>
+    <!-- Formulaire Standard -->
+    <form name="default">
+        <page number="1">
+            <field>
+                <dc-schema>dc</dc-schema>
+                <dc-element>title</dc-element>
+                <label>Titre</label>
+                <input-type>onebox</input-type>
+                <required>true</required>
+            </field>
+            <field>
+                <dc-schema>dc</dc-schema>
+                <dc-element>contributor</dc-element>
+                <dc-qualifier>author</dc-qualifier>
+                <label>Auteur</label>
+                <input-type>name</input-type>
+                <authority>Auteur-authority</authority>
+            </field>
+        </page>
+    </form>
+
+    <!-- FORMULAIRE PROJET AAR -->
+    <form name="projet-form">
+        <page number="1">
+            <field>
+                <dc-schema>dc</dc-schema>
+                <dc-element>title</dc-element>
+                <label>Titre du protocole</label>
+                <input-type>onebox</input-type>
+                <required>true</required>
+            </field>
+            <field>
+                <dc-schema>dc</dc-schema>
+                <dc-element>contributor</dc-element>
+                <dc-qualifier>author</dc-qualifier>
+                <label>Nom Investigateur Principal (IP)</label>
+                <input-type>name</input-type>
+                <authority>Auteur-authority</authority>
+                <required>true</required>
+            </field>
+            <field>
+                <dc-schema>dc</dc-schema>
+                <dc-element>publisher</dc-element>
+                <label>Institut de recherche</label>
+                <input-type>onebox</input-type>
+                <authority>Institution-authority</authority>
+                <required>true</required>
+            </field>
+            <field>
+                <dc-schema>cdnss</dc-schema>
+                <dc-element>projet</dc-element>
+                <dc-qualifier>typeEtude</dc-qualifier>
+                <label>Type d’étude</label>
+                <input-type>dropdown</input-type>
+                <vocabulary>types-etude</vocabulary>
+                <required>true</required>
+            </field>
+            <field>
+                <dc-schema>cdnss</dc-schema>
+                <dc-element>projet</dc-element>
+                <qualifier>status</qualifier>
+                <label>Statut</label>
+                <input-type>onebox</input-type>
+                <visibility>hidden</visibility>
+            </field>
+        </page>
+        <page number="2">
+            <field>
+                <label>Soumission du dossier (Pièces obligatoires)</label>
+                <input-type>upload</input-type>
+                <required>true</required>
+            </field>
+        </page>
+    </form>
+
+    <!-- Formulaires Secondaires -->
+    <form name="institution-form">
+        <page number="1">
+            <field>
+                <dc-schema>dc</dc-schema>
+                <dc-element>title</dc-element>
+                <label>Nom de l'Institution</label>
+                <input-type>onebox</input-type>
+            </field>
+        </page>
+    </form>
+    <form name="auteur-form">
+        <page number="1">
+            <field>
+                <dc-schema>dc</dc-schema>
+                <dc-element>title</dc-element>
+                <label>Nom de l'Auteur</label>
+                <input-type>onebox</input-type>
+            </field>
+        </page>
+    </form>
+</input-forms>

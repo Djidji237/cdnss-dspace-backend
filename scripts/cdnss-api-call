@@ -1,0 +1,63 @@
+#!/bin/bash
+# Utilitaire pour faire des appels API DSpace 9.1
+# Usage: cdnss-api-call <endpoint> [GET|POST|PUT|DELETE] [data]
+
+ENDPOINT=$1
+METHOD=${2:-GET}
+DATA=$3
+API_URL="http://localhost:8080/server/api"
+
+if [ -z "$ENDPOINT" ]; then
+    echo "Usage: cdnss-api-call <endpoint> [method] [data]"
+    echo ""
+    echo "Exemples:"
+    echo "  cdnss-api-call core/communities"
+    echo "  cdnss-api-call core/collections GET"
+    echo "  cdnss-api-call discover/search/objects?query=paludisme"
+    echo "  cdnss-api-call core/communities POST '{\"name\":\"Test\"}'"
+    echo ""
+    exit 1
+fi
+
+# Lire les tokens depuis les fichiers
+if [ ! -f ~/.dspace/auth_token.txt ]; then
+    echo "✗ Tokens non trouvés. Exécutez d'abord: cdnss-get-token"
+    exit 1
+fi
+
+AUTH_TOKEN=$(cat ~/.dspace/auth_token.txt)
+CSRF_TOKEN=$(cat ~/.dspace/csrf_token.txt 2>/dev/null)
+SESSION_COOKIE=$(cat ~/.dspace/session_cookie.txt 2>/dev/null)
+
+echo "→ Appel API: $METHOD /$ENDPOINT"
+echo ""
+
+# Construire la commande curl selon la méthode
+if [ "$METHOD" == "GET" ]; then
+    # GET - Seulement Authorization nécessaire
+    RESPONSE=$(curl -s "$API_URL/$ENDPOINT" \
+      -H "Authorization: Bearer $AUTH_TOKEN")
+else
+    # POST/PUT/DELETE - Authorization + CSRF + Cookie
+    if [ -n "$DATA" ]; then
+        RESPONSE=$(curl -s -X "$METHOD" "$API_URL/$ENDPOINT" \
+          -H "Authorization: Bearer $AUTH_TOKEN" \
+          -H "X-XSRF-TOKEN: $CSRF_TOKEN" \
+          -H "Cookie: $SESSION_COOKIE" \
+          -H "Content-Type: application/json" \
+          -d "$DATA")
+    else
+        RESPONSE=$(curl -s -X "$METHOD" "$API_URL/$ENDPOINT" \
+          -H "Authorization: Bearer $AUTH_TOKEN" \
+          -H "X-XSRF-TOKEN: $CSRF_TOKEN" \
+          -H "Cookie: $SESSION_COOKIE" \
+          -H "Content-Type: application/json")
+    fi
+fi
+
+# Afficher la réponse formatée
+if echo "$RESPONSE" | jq '.' > /dev/null 2>&1; then
+    echo "$RESPONSE" | jq '.'
+else
+    echo "$RESPONSE"
+fi
