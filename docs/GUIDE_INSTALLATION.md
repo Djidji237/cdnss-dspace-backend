@@ -1,581 +1,440 @@
-**PHASE 1 : INSTALLATION DES PREREQUIS LOGICIELS ET DE DSPACE**
+# GUIDE D'INSTALLATION ET DE CONFIGURATION DE LA PLATEFORME \[NOM_PROJET\] (DSPACE 9.x)
 
-Ces commandes sont basées sur un serveur **Ubuntu/Debian**.
+Projet : \[VOTRE PROJET / CENTRE DE DOCUMENTATION\]
 
-1.  **Mettre à jour votre système :**
+Version DSpace : 9.x (Backend)
+
+Serveur Cible : Ubuntu/Debian (dspace.\[votre-domaine\].com)
+
+Auteur : Djidjioua Hamadama Simon Pierre
+
+Date : Novembre 2025
+
+## PHASE 1 : INSTALLATION DES PRÉREQUIS LOGICIELS ET DE DSPACE (SOCLE)
+
+_Ces commandes sont basées sur un serveur Ubuntu/Debian._
+
+### 1\. Mise à jour du système et outils de base
+
+Connectez-vous en tant que votre utilisateur système (ex: \[votre-user\]).
 
 **\[votre-user\]** - Mettez à jour le système :
 
-sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y  
+sudo apt install -y build-essential git wget curl vim software-properties-common unzip  
 
-sudo apt install -y build-essential git wget curl vim software-properties-common unzip
+### 2\. Installation de Java 17 (Requis par DSpace 9)
 
-1.  Installer Java 17 (Requis par DSpace 9) :
+DSpace 9 nécessite obligatoirement Java 17.
 
-sudo apt install -y openjdk-17-jdk
+**\[votre-user\]** - Installation OpenJDK 17 :
 
-\# Vérifiez l'installation
+sudo apt install -y openjdk-17-jdk  
 
-java –version
+**\[votre-user\]** - Vérifiez l'installation :
 
-Vous devriez voir : openjdk version "17.x.x"
+java -version  
 
-**\[votre-user\]** - Configurez JAVA\_HOME :
+_Vous devriez voir : openjdk version "17.x.x"_
 
-echo 'export JAVA\_HOME="/usr/lib/jvm/java-17-openjdk-amd64"' | sudo tee -a ~/.bashrc
+**\[votre-user\]** - Configurez JAVA_HOME :
 
-echo 'export PATH=$PATH:$JAVA\_HOME/bin' | sudo tee -a ~/.bashrc
+echo 'export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"' | sudo tee -a ~/.bashrc  
+echo 'export PATH=$PATH:$JAVA_HOME/bin' | sudo tee -a ~/.bashrc  
+source ~/.bashrc  
 
-source ~/.bashrc
+**\[votre-user\]** - Vérifiez JAVA_HOME :
 
-**\[votre-user\]** - Vérifiez JAVA\_HOME :
+echo $JAVA_HOME  
 
-echo $JAVA\_HOME
+_Devrait afficher : /usr/lib/jvm/java-17-openjdk-amd64_
 
-Devrait afficher : /usr/lib/jvm/java-17-openjdk-amd64
+### 3\. Installation de Maven 3.9.11
 
-1.  Installer maven 3.9.11
+Maven est utilisé pour compiler le code source Java de DSpace.
 
 **\[votre-user\]** - Télécharger la dernière version :
 
-cd /tmp
-
-wget https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz
-
-sudo tar xzf apache-maven-3.9.11-bin.tar.gz -C /opt
-
-sudo ln -s /opt/apache-maven-3.9.11 /opt/maven
+cd /tmp  
+wget https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz  
+sudo tar xzf apache-maven-3.9.11-bin.tar.gz -C /opt  
+sudo ln -s /opt/apache-maven-3.9.11 /opt/maven  
 
 **\[votre-user\]** - Configurez Maven :
 
-echo 'export M2\_HOME=/opt/maven' | sudo tee -a ~/.bashrc
-
-echo 'export PATH=$PATH:$M2\_HOME/bin' | sudo tee -a ~/.bashrc
-
-source ~/.bashrc
+echo 'export M2_HOME=/opt/maven' | sudo tee -a ~/.bashrc  
+echo 'export PATH=$PATH:$M2_HOME/bin' | sudo tee -a ~/.bashrc  
+source ~/.bashrc  
 
 **\[votre-user\]** - Vérifiez Maven :
 
-mvn -version
+mvn -version  
 
-Devrait afficher : Apache Maven 3.9.11
+_Devrait afficher : Apache Maven 3.9.11_
 
-1.  Installation de Ant
+### 4\. Installation de Ant
 
-\[votre-user\] - Installez Ant :
+Ant est utilisé pour le déploiement des fichiers binaires.
 
-sudo apt install -y ant
+**\[votre-user\]** - Installez Ant :
 
-\[votre-user\] - Vérifiez Ant :
+sudo apt install -y ant  
 
-ant -version
+**\[votre-user\]** - Vérifiez Ant :
 
-1.  Installer PostgreSQL (Client & Serveur) :
+ant -version  
 
-\[votre-user\] - Installez PostgreSQL :
+### 5\. Installation et Configuration de PostgreSQL
 
-sudo apt install -y postgresql postgresql-contrib
+PostgreSQL est la base de données relationnelle de DSpace.
 
-\[votre-user\] - Démarrez PostgreSQL :
+#### 5.1 Installation
 
-sudo systemctl start postgresql
+**\[votre-user\]** - Installez PostgreSQL :
 
-sudo systemctl enable postgresql
+sudo apt install -y postgresql postgresql-contrib  
 
-\[votre-user\] - Vérifiez le statut :
+**\[votre-user\]** - Démarrez PostgreSQL :
 
-sudo systemctl status postgresql
-
-Devrait afficher : active (running)
-
-1.  Configure DSpace database, pgcrypto extension in PostgreSQL:
-
-6.1 Configuration de la base de données
-
-\[votre-user\] - Passez à l'utilisateur postgres :
-
-sudo -i -u postgres
-
-**\[postgres\]** - Vous êtes maintenant connecté en tant que postgres. Créez la base :
-
-psql
-
-**\[postgres via psql\]** - Dans le shell PostgreSQL, exécutez :
-
-sql
-
-_\-- Créer l'utilisateur dspace avec un mot de passe fort_
-
-CREATE USER dspace WITH PASSWORD 'DSpace2024\_CDNSS!Secure';
-
-_\-- Créer la base de données_
-
-CREATE DATABASE dspace OWNER dspace ENCODING 'UTF8';
-
-_\-- Donner tous les privilèges_
-
-GRANT ALL PRIVILEGES ON DATABASE dspace TO dspace;
-
-_\-- Se connecter à la base dspace_
-
-\\c dspace
-
-_\-- Activer l'extension pgcrypto (requis par DSpace)_
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-_\-- Donner les droits sur le schéma public_
-
-GRANT ALL ON SCHEMA public TO dspace;
-
-_\-- Quitter psql_
-
-\\q
-
-**\[postgres\]** - Retournez à votre utilisateur normal :
-
-exit
-
-**\[votre-user\]** - Vous êtes de retour en tant que votre utilisateur normal.
-
-6.2 Configuration de l'accès PostgreSQL
-
-**\[votre-user\]** - Éditez le fichier pg\_hba.conf :
-
-sudo nano /etc/postgresql/14/main/pg\_hba.conf
-
-\*\*\[votre-user\]\*\* - Ajoutez ces lignes AVANT la ligne \`local all all peer\` :
-
-_\# DSpace local connections_
-
-local dspace dspace md5
-
-host dspace dspace 127.0.0.1/32 md5
-
-host dspace dspace ::1/128 md5
-
-**\[votre-user\]** - Sauvegardez et quittez (ESC, puis :wq)
-
-**\[votre-user\]** - Optimisez PostgreSQL pour DSpace :
-
-sudo nano /etc/postgresql/14/main/postgresql.conf
-
-**\[votre-user\]** - Trouvez et modifiez ces lignes (décommentez si nécessaire) :
-
-max\_connections = 200
-
-shared\_buffers = 512MB
-
-effective\_cache\_size = 2GB
-
-maintenance\_work\_mem = 128MB
-
-checkpoint\_completion\_target = 0.9
-
-wal\_buffers = 16MB
-
-default\_statistics\_target = 100
-
-random\_page\_cost = 1.1
-
-effective\_io\_concurrency = 200
-
-work\_mem = 4MB
-
-**\[votre-user\]** - Redémarrez PostgreSQL :
-
-sudo systemctl restart postgresql
-
-**\[votre-user\]** - Testez la connexion :
-
-psql -U dspace -h localhost -d dspace -W
-
-Entrez le mot de passe : DSpace2024\_CDNSS!Secure Si connecté avec succès, tapez \\q pour quitter
-
-1.  Installation d'Apache Solr 9.x
-
-**\[votre-user\]** - Téléchargez Solr 9.10.0 (compatible DSpace 9.1) :
-
-cd /tmp
-
-wget -c [https://www.apache.org/dyn/closer.lua/solr/solr/9.10.0/solr-9.10.0.tgz?action=download](https://www.apache.org/dyn/closer.lua/solr/solr/9.10.0/solr-9.10.0.tgz?action=download)
-
-**\[votre-user\]** \- Move the tar to rename it
-
-mv solr-9.10.0.tgz\\?action\\=download solr-9.10.0.tgz
-
-**\[votre-user\]** - Extrayez Solr :
-
-sudo tar xzf solr-9.10.0.tgz -C /opt
-
-sudo mv /opt/solr-9.10.0 /opt/solr
-
-1.  Création de l'Utilisateur Système DSpace
-
-\[votre-user\] - Créez l'utilisateur dspace :
-
-sudo useradd -m -s /bin/bash dspace
-
-\[votre-user\] - Définissez un mot de passe :
-
-sudo passwd dspace
-
-Entrez un mot de passe sécurisé (ex: DSpaceUser2024!)
-
-\[votre-user\] - Donnez les droits sudo à l'utilisateur dspace (optionnel, pour faciliter l'administration) :
-
-sudo usermod -aG sudo dspace
-
-\[votre-user\] - Donnez la propriété de Solr à l'utilisateur dspace :
-
-sudo chown -R dspace:dspace /opt/solr
-
-1.  Téléchargement et Compilation de DSpace 9.4.1
-
-\[votre-user\] - Passez à l'utilisateur dspace :
-
-sudo su – dspace
-
-\[dspace\] - Vous êtes maintenant connecté en tant qu'utilisateur dspace.
-
-sudo nano /home/dspace/.bashrc
-
-\[dspace\] – Collez ceci a la fin du document :
-
-export JAVA\_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
-
-export M2\_HOME="/opt/maven"
-
-export PATH="$PATH:$JAVA\_HOME/bin:$M2\_HOME/bin"
-
-\[dspace\] – Mettez a jour l’environement :
-
-source ~/.bashrc
-
-Téléchargez DSpace :
-
-cd ~
-
-git clone https://github.com/DSpace/DSpace.git dspace-source
-
-cd dspace-source
-
-\[dspace\] - Basculez sur la version 9.1 :
-
-git checkout dspace-9.1
-
-\[dspace\] - Vérifiez que vous êtes sur la bonne version :
-
-git branch
-
-Devrait afficher : \* dspace-9.1
-
-9.1 Configuration de DSpace
-
-\[dspace\] - Éditez le fichier de configuration :
-
-nano dspace/config/local.cfg
-
-\[dspace\] - collez le contenu du fichier « local.cfg » dans le dossier de configuration/installation
-
-**\[dspace\]** - Sauvegardez et quittez
-
-9.2 Configuration des Schémas de Métadonnées CDNSS
-
-**\[dspace\]** - Créez le fichier de schéma personnalisé :
-
-mkdir -p /home/dspace/dspace-source/dspace/config/registries
-
-nano /home/dspace/dspace-source/dspace/config/registries/cdnss-types.xml
-
-**\[dspace\]** - Collez le contenu du fichier « cdnss-types.xml » dans le dossier de configuration/installation
-
-**\[dspace\]** - Sauvegardez et quittez
-
-9.3 Compilation de DSpace
-
-**\[dspace\]** - Compilez DSpace (cette étape peut prendre 10-20 minutes) :
-
-cd /home/dspace/dspace-source
-
-mvn clean package
-
-**ATTENDEZ** que la compilation se termine. Vous devriez voir BUILD SUCCESS à la fin.
-
-9.4 Installation de DSpace
-
-**\[dspace\]** - Créez le répertoire d'installation :
-
-sudo mkdir -p /dspace
-
-sudo chown dspace:dspace /dspace
-
-**\[dspace\]** - Installez DSpace :
-
-cd /home/dspace/dspace-source/dspace/target/dspace-installer
-
-ant fresh\_install
-
-**ATTENDEZ** que l'installation se termine. Vous devriez voir BUILD SUCCESSFUL.
-
-**\[dspace\]** - Vérifiez que l'installation s'est bien passée :
-
-ls -la /dspace
-
-Vous devriez voir les dossiers: assetstore, bin, config, lib, solr, webapps, etc.
-
-**9.5 Chargement du Schéma de Métadonnées CDNSS**
-
-**\[dspace\]** - Chargez le schéma personnalisé :
-
-/dspace/bin/dspace registry-loader -m /home/dspace/dspace-source/dspace/config/registries/cdnss-types.xml
-
-1.  Creation de l’Administrateur
-
-Création de l'Administrateur
-
-\[dspace\] - Créez l'utilisateur administrateur initial :
-
-/dspace/bin/dspace create-administrator
-
-\`\`\`
-
-\*\*\[dspace\]\*\* - Répondez aux questions :
-
-\`\`\`
-
-E-mail address: admin@pheoc.cm
-
-First name: Admin
-
-Last name: CDNSS
-
-Language (fr, en, etc.): fr
-
-Password: \[entrez un mot de passe sécurisé, ex: AdminCDNSS2024!\]
-
-Retype password: \[répétez le mot de passe\]
-
-Vous devriez voir: Administrator account created
-
-1.  Configuration et Démarrage de Solr
-
-\[dspace\] - Copiez les configurations Solr de DSpace :
-
-cp -r /dspace/solr/\* /opt/solr/server/solr/
-
-\[dspace\] - Démarrez Solr :
-
-/opt/solr/bin/solr start
-
-Vous devriez voir: Started Solr server on port 8983
-
-\[dspace\] - Vérifiez que Solr fonctionne :
-
-curl http://localhost:8983/solr/admin/cores?action=STATUS
-
-**(if errors occur, you need to solve libraries errors:  
-cp /opt/solr/modules/analysis-extras/lib/lucene-analysis-icu-9.12.3.jar /opt/solr/server/solr-webapp/webapp/WEB-INF/lib/**
-
-**cp /opt/solr/modules/analysis-extras/lib/icu4j-\*.jar /opt/solr/server/solr-webapp/webapp/WEB-INF/lib/**
-
-**)**
-
-Vous devriez voir une réponse JSON avec les cores Solr
-
-**NB: IF THE CORES ARE NOT CREATED AUTOMATICALLY, YOU CAN CREATE THEM MANUALLY: (Check CORES EXAMPLE FILES in directory)**
-
-\[dspace\] - Créez les cores Solr pour DSpace 8.1 :
-
-bash/opt/solr/bin/solr create -c authority -d /dspace/solr/authority
-
-/opt/solr/bin/solr create -c oai -d /dspace/solr/oai
-
-/opt/solr/bin/solr create -c search -d /dspace/solr/search
-
-/opt/solr/bin/solr create -c statistics -d /dspace/solr/statistics
-
-Pour chaque core, vous devriez voir: Created new core 'xxx'
-
-\[dspace\] - Vérifiez que tous les cores sont créés :
-
-curl -s "http://localhost:8983/solr/admin/cores?action=STATUS" | grep -o '"name":"\[^"\]\*"'
-
-Vous devriez voir: **authority, oai, qaevent, search, statistics, suggestion**
-
-1.  Installation et Configuration de Tomcat 10
-
-**\[dspace\]** - Retournez à votre utilisateur normal :
-
-exit
-
-**\[votre-user\]** - Vous êtes maintenant de retour en tant que votre utilisateur normal. Téléchargez Tomcat 9 :
-
-bash
-
-cd /tmp
-
-wget [https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.49/bin/apache-tomcat-10.1.49.tar.gz](https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.49/bin/apache-tomcat-10.1.49.tar.gz)
-
-**\[votre-user\]** - Installez Tomcat :
-
-sudo tar zxf apache-tomcat-10.1.49.tar.gz -C /opt
-
-sudo mv /opt/apache-tomcat-10.1.49 /opt/tomcat
-
-sudo chown -R dspace:dspace /opt/tomcat
-
-**12.1 Configuration de Tomcat pour DSpace**
-
-**\[votre-user\]** - Configurez la mémoire Java pour Tomcat :
-
-sudo nano /opt/tomcat/bin/setenv.sh
-
-**\[votre-user\]** - Ajoutez ces lignes :
-
-#!/bin/bash
-
-\# Configuration mémoire pour DSpace 8.1
-
-export JAVA\_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-
-export CATALINA\_OPTS="-Xmx2048m -Xms1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true"
-
-export JAVA\_OPTS="-Djava.awt.headless=true -Dfile.encoding=UTF-8"
-
-**\[votre-user\]** - Rendez le fichier exécutable :
-
-sudo chmod +x /opt/tomcat/bin/setenv.sh
-
-**12.2 Configuration du connecteur HTTP**
-
-**\[votre-user\]** - Éditez server.xml :
-
-sudo nano /opt/tomcat/conf/server.xml
-
-**\[votre-user\]** - Trouvez la section <Connector port="8080" et remplacez-la par :
-
-<Connector port="8080" protocol="HTTP/1.1"
-
-connectionTimeout="20000"
-
-redirectPort="8443"
-
-maxThreads="200"
-
-minSpareThreads="10"
-
-maxHttpHeaderSize="65536"
-
-enableLookups="false"
-
-acceptCount="100"
-
-compression="on"
-
-compressionMinSize="2048"
-
-noCompressionUserAgents="gozilla, traviata"
-
-compressableMimeType="text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml"
-
-URIEncoding="UTF-8" />
-
-**12.3 Déploiement de l'application DSpace**
-
-**\[votre-user\]** - create a symbolic link from Tomcat to your DSpace installation « server » folder :
-
-sudo ln -s /dspace/webapps/server /opt/tomcat/webapps/server
-
-sudo chown dspace:dspace /opt/tomcat/webapps/server
-
-**12.4 Création du service systemd pour Tomcat**
-
-**\[votre-user\]** - Créez le fichier service :
-
-sudo nano /etc/systemd/system/tomcat.service
-
-**\[votre-user\]** - Ajoutez ce contenu :
-
-\[Unit\]
-
-Description=Apache Tomcat pour DSpace 9.1
-
-After=network.target postgresql.service
-
-\[Service\]
-
-Type=forking
-
-User=dspace
-
-Group=dspace
-
-Environment="JAVA\_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
-
-Environment="CATALINA\_PID=/opt/tomcat/temp/tomcat.pid"
-
-Environment="CATALINA\_HOME=/opt/tomcat"
-
-Environment="CATALINA\_BASE=/opt/tomcat"
-
-Environment="CATALINA\_OPTS=-Xmx2048m -Xms1024m"
-
-ExecStart=/opt/tomcat/bin/startup.sh
-
-ExecStop=/opt/tomcat/bin/shutdown.sh
-
-RestartSec=10
-
-Restart=always
-
-\[Install\]
-
-WantedBy=multi-user.target
-
-**\[votre-user\]** - Sauvegardez et quittez
-
-**\[votre-user\]** - Rechargez systemd :
-
-sudo systemctl daemon-reload
-
-**\[votre-user\]** - Activez le service Tomcat :
-
-sudo systemctl enable tomcat
-
-**\[votre-user\]** - Démarrez Tomcat :
-
-sudo systemctl start tomcat
+sudo systemctl start postgresql  
+sudo systemctl enable postgresql  
 
 **\[votre-user\]** - Vérifiez le statut :
 
-sudo systemctl status tomcat
+sudo systemctl status postgresql  
 
-Vous devriez voir active (running)
+_Devrait afficher : active (running)_
 
-**\[votre-user\]** - Attendez 30-60 secondes que l'application se déploie, puis vérifiez les logs :
+#### 5.2 Création de la Base de Données et Extension pgcrypto
 
-sudo tail -f /opt/tomcat/logs/catalina.out
+_Cette étape est critique pour le support des UUIDs._
 
-Appuyez sur CTRL+C pour arrêter de suivre les logs Cherchez le message: Server startup in \[xxxx\] milliseconds
+**\[votre-user\]** - Passez à l'utilisateur postgres :
 
-1.  Indexation Initiale avec Solr
+sudo -i -u postgres  
 
-\[votre-user\] - Passez à l'utilisateur dspace :
+**\[postgres\]** - Vous êtes maintenant connecté en tant que postgres. Créez la base :
 
-sudo su - dspace
+psql  
 
-\[dspace\] - Créez l'index de recherche initial :
+**\[postgres via psql\]** - Dans le shell PostgreSQL, exécutez :
 
-/dspace/bin/dspace index-discovery -b
+\-- Créer l'utilisateur dspace avec un mot de passe fort  
+CREATE USER dspace WITH PASSWORD '\[VOTRE_MOT_DE_PASSE_SECURISE\]';  
+<br/>\-- Créer la base de données  
+CREATE DATABASE dspace OWNER dspace ENCODING 'UTF8';  
+<br/>\-- Donner tous les privilèges  
+GRANT ALL PRIVILEGES ON DATABASE dspace TO dspace;  
+<br/>\-- Se connecter à la base dspace  
+\\c dspace  
+<br/>\-- Activer l'extension pgcrypto (requis par DSpace)  
+CREATE EXTENSION IF NOT EXISTS pgcrypto;  
+<br/>\-- Donner les droits sur le schéma public  
+GRANT ALL ON SCHEMA public TO dspace;  
+<br/>\-- Quitter psql  
+\\q  
 
-**(IF THERE ARE JAVA OR OTHER MODULES ERRORS DUE TO ENVIRONMENT, RUN THIS:  
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin)**
+**\[postgres\]** - Retournez à votre utilisateur normal :
 
-Cette commande peut prendre quelques minutes. Vous devriez voir des messages de progression.
+exit  
 
-THE DSPACE BACKEND IS UP, RUNNING AND FULLY FUNCTIONNAL AT THIS POINT.
+#### 5.3 Configuration de l'Authentification (pg_hba.conf)
 
-Now we have to customize the backend server api’s, indexes etc
+DSpace utilise une authentification par mot de passe (MD5). Il faut harmoniser cela.
 
-**PHASE 2 : CUSTOMISATION ET CONFIGURATION DE DSPACE**
+**\[votre-user\]** - Éditez le fichier pg_hba.conf (vérifiez le chemin de version, ex: 14 ou 16) :
+
+sudo nano /etc/postgresql/16/main/pg_hba.conf  
+
+**\[votre-user\]** - Ajoutez ces lignes AVANT la ligne local all all peer :
+
+\# DSpace local connections  
+local dspace dspace md5  
+host dspace dspace 127.0.0.1/32 md5  
+host dspace dspace ::1/128 md5  
+
+**\[votre-user\]** - Sauvegardez et quittez.
+
+**\[votre-user\]** - Optimisez PostgreSQL pour DSpace (postgresql.conf) :
+
+sudo nano /etc/postgresql/16/main/postgresql.conf  
+
+Modifiez les valeurs suivantes (décommentez si nécessaire) :
+
+max_connections = 200  
+shared_buffers = 512MB  
+effective_cache_size = 2GB  
+maintenance_work_mem = 128MB  
+checkpoint_completion_target = 0.9  
+wal_buffers = 16MB  
+default_statistics_target = 100  
+random_page_cost = 1.1  
+effective_io_concurrency = 200  
+work_mem = 4MB  
+
+**\[votre-user\]** - Redémarrez PostgreSQL :
+
+sudo systemctl restart postgresql  
+
+**\[votre-user\]** - Testez la connexion :
+
+psql -U dspace -h localhost -d dspace -W  
+
+_Entrez le mot de passe : \[VOTRE_MOT_DE_PASSE_SECURISE\]. Tapez \\q pour quitter._
+
+### 6\. Installation d'Apache Solr 9.x
+
+**\[votre-user\]** - Téléchargez Solr 9.10.0 :
+
+cd /tmp  
+wget https://www.apache.org/dyn/closer.lua/solr/solr/9.10.0/solr-9.10.0.tgz?action=download  
+mv solr-9.10.0.tgz\\?action\\=download solr-9.10.0.tgz  
+
+**\[votre-user\]** - Extrayez Solr :
+
+sudo tar xzf solr-9.10.0.tgz -C /opt  
+sudo mv /opt/solr-9.10.0 /opt/solr  
+
+### 7\. Création de l'Utilisateur Système DSpace
+
+**\[votre-user\]** - Créez l'utilisateur dspace :
+
+sudo useradd -m -s /bin/bash dspace  
+sudo passwd dspace  
+\# Entrez un mot de passe sécurisé  
+sudo usermod -aG sudo dspace  
+sudo chown -R dspace:dspace /opt/solr  
+
+### 8\. Téléchargement du Code Source DSpace
+
+**\[votre-user\]** - Passez à l'utilisateur dspace :
+
+sudo su - dspace  
+
+**\[dspace\]** - Configurez l'environnement :
+
+nano /home/dspace/.bashrc  
+
+Ajoutez à la fin :
+
+export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"  
+export M2_HOME="/opt/maven"  
+export PATH="$PATH:$JAVA_HOME/bin:$M2_HOME/bin"  
+
+Activez :
+
+source ~/.bashrc  
+
+**\[dspace\]** - Téléchargez DSpace :
+
+cd ~  
+git clone \[https://github.com/DSpace/DSpace.git\](https://github.com/DSpace/DSpace.git) dspace-source  
+cd dspace-source  
+git checkout dspace-9.1  
+git branch  
+
+_Devrait afficher : \* dspace-9.1_
+
+## PHASE 2 : CUSTOMISATION ET CONFIGURATION \[NOM_PROJET\]
+
+C'est ici que nous transformons DSpace générique en votre plateforme personnalisée.
+
+### 9\. Création des Dossiers de Configuration
+
+**\[dspace\]** :
+
+mkdir -p /home/dspace/dspace-source/dspace/config/registries  
+mkdir -p /home/dspace/dspace-source/dspace/config/controlled-vocabularies  
+mkdir -p /home/dspace/dspace-source/dspace/config/entities  
+
+### 10\. Création des Fichiers de Configuration Personnalisés
+
+Créez les 7 fichiers suivants (les contenus doivent être préparés à l'avance).
+
+#### 10.1 local.cfg (Configuration Principale)
+
+nano /home/dspace/dspace-source/dspace/config/local.cfg  
+
+_Copier l'intégralité du contenu de votre fichier local.cfg._
+
+#### 10.2 custom-metadata.xml (Registre de Métadonnées)
+
+_Ce fichier définit les champs personnalisés (ex: Status projet, Date, etc.)._
+
+nano /home/dspace/dspace-source/dspace/config/registries/custom-metadata.xml  
+
+_Copier le contenu._
+
+#### 10.3 relationship-types.xml (Définition des Relations - CRITIQUE)
+
+nano /home/dspace/dspace-source/dspace/config/entities/relationship-types.xml  
+
+_Copier le contenu._
+
+#### 10.4 item-submission.xml (Entités & Processus)
+
+nano /home/dspace/dspace-source/dspace/config/item-submission.xml  
+
+_Copier le contenu._
+
+#### 10.5 workflow.xml (Workflow de Validation)
+
+nano /home/dspace/dspace-source/dspace/config/workflow.xml  
+
+_Copier le contenu._
+
+#### 10.6 input-forms.xml (Formulaires)
+
+nano /home/dspace/dspace-source/dspace/config/input-forms.xml  
+
+_Copier le contenu._
+
+#### 10.7 types-etude.xml (Vocabulaire)
+
+nano /home/dspace/dspace-source/dspace/config/controlled-vocabularies/types-etude.xml  
+
+_Copier le contenu._
+
+### 11\. Compilation et Installation
+
+#### 11.1 Compilation avec Maven
+
+**\[dspace\]** - Compilez :
+
+cd /home/dspace/dspace-source  
+mvn clean package -Dmirrors.skip=true  
+
+_ATTENDEZ le message BUILD SUCCESS._
+
+#### 11.2 Installation (Ant)
+
+**\[dspace\]** - Installez :
+
+sudo mkdir -p /dspace  
+sudo chown dspace:dspace /dspace  
+cd /home/dspace/dspace-source/dspace/target/dspace-installer  
+ant fresh_install  
+
+_ATTENDEZ le message BUILD SUCCESSFUL._
+
+#### 11.3 Chargement du Schéma de Métadonnées
+
+**\[dspace\]** :
+
+/dspace/bin/dspace registry-loader -m /home/dspace/dspace-source/dspace/config/registries/custom-metadata.xml  
+
+## PHASE 3 : DÉPLOIEMENT ET DÉMARRAGE DES SERVICES
+
+### 12\. Configuration et Démarrage de Solr
+
+**\[dspace\]** :
+
+cp -r /dspace/solr/\* /opt/solr/server/solr/  
+/opt/solr/bin/solr start  
+
+_Vérifiez : curl http://localhost:8983/solr/admin/cores?action=STATUS_
+
+Si les cœurs ne sont pas créés automatiquement :
+
+/opt/solr/bin/solr create -c authority -d /dspace/solr/authority  
+/opt/solr/bin/solr create -c oai -d /dspace/solr/oai  
+/opt/solr/bin/solr create -c search -d /dspace/solr/search  
+/opt/solr/bin/solr create -c statistics -d /dspace/solr/statistics  
+
+### 13\. Installation de Tomcat 10
+
+**\[dspace\]** -> exit (retour à **\[votre-user\]**)
+
+**\[votre-user\]** - Installez Tomcat :
+
+cd /tmp  
+wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.49/bin/apache-tomcat-10.1.49.tar.gz  
+sudo tar xzf apache-tomcat-10.1.49.tar.gz -C /opt  
+sudo mv /opt/apache-tomcat-10.1.49 /opt/tomcat  
+sudo chown -R dspace:dspace /opt/tomcat  
+
+#### 13.1 Configuration (setenv.sh)
+
+sudo nano /opt/tomcat/bin/setenv.sh  
+
+Ajoutez :
+
+#!/bin/bash  
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64  
+export CATALINA_OPTS="-Xmx2048m -Xms1024m -Dfile.encoding=UTF-8 -Djava.awt.headless=true"  
+export JAVA_OPTS="-Djava.awt.headless=true -Dfile.encoding=UTF-8"  
+
+Rendez exécutable : sudo chmod +x /opt/tomcat/bin/setenv.sh
+
+#### 13.2 Configuration du connecteur HTTP (server.xml)
+
+Éditez /opt/tomcat/conf/server.xml et mettez à jour le connecteur port 8080 avec URIEncoding="UTF-8".
+
+#### 13.3 Déploiement
+
+sudo ln -s /dspace/webapps/server /opt/tomcat/webapps/server  
+sudo chown dspace:dspace /opt/tomcat/webapps/server  
+
+#### 13.4 Service Systemd
+
+Créez /etc/systemd/system/tomcat.service (contenu standard Tomcat pour DSpace).
+
+Activez et démarrez :
+
+sudo systemctl daemon-reload  
+sudo systemctl enable tomcat  
+sudo systemctl start tomcat  
+
+### 14\. Initialisation de la Base de Données et des Données
+
+**\[dspace\]** :
+
+/dspace/bin/dspace database migrate  
+/dspace/bin/dspace create-administrator  
+
+\# Chargez le schéma  
+/dspace/bin/dspace registry-loader -metadata /dspace/config/registries/custom-metadata.xml  
+
+\# Initialiser les Entités (CRITIQUE)  
+/dspace/bin/dspace initialize-entities -f /home/dspace/dspace-source/dspace/config/entities/relationship-types.xml  
+
+\# Indexer  
+/dspace/bin/dspace index-discovery -b  
+
+### 15\. Démarrage Final
+
+Votre backend est accessible à : http://\[votre-domaine\]:8080/server
+
+### 16\. Création des Groupes (Workflow)
+
+Créez les groupes nécessaires au workflow :
+
+/dspace/bin/dspace dsprop -p "group.create=Staff_Reviewer"  
+/dspace/bin/dspace dsprop -p "group.create=Point_Focal"  
+
+## PHASE DE TEST
+
+**ÉTAPE 1 : Vérification de l'API**
+
+Testez http://\[votre-domaine\]:8080/server/api/core/entitytypes. Vous devez voir vos entités personnalisées (ex: Projet, Institution).
+
+**ÉTAPE 2 : Création de la Structure**
+
+1.  Créez une Communauté : "Recherche"
+2.  Créez une Collection : "Projets de Recherche"
+3.  **CRITIQUE :** Assignez le "Type d'Entité" : Projet à cette collection.
+
+ÉTAPE 3 : Test de Soumission
+
+En tant qu'Admin, lancez une soumission. Vérifiez que vos formulaires personnalisés apparaissent.
+
+ÉTAPE 4 : Test du Workflow
+
+Soumettez un projet. Vérifiez qu'il tombe en "Attente de cotation" et n'est pas publié immédiatement.
+
+**ÉTAPE 5 : Préparation Frontend**
+
+Fournissez à l'équipe Web/WordPress :
+
+1.  L'URL API : http://\[votre-domaine\]:8080/server
+2.  L'UUID de la Collection "Projets".
